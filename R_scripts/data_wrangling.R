@@ -6,7 +6,7 @@ library(lubridate)
 # Read in the data ----
 data_input <- "C:/Users/smame/OneDrive/Desktop/EMS_Git/ag_sensors/R_scripts"
 setwd(data_input)
-df <- read.csv("../data/Kernen_20221123_20221125.csv")
+df <- read.csv("../data/Kernen_20221123_20221209.csv")
 
 # Only keep data post-installation ----
 df <- df %>% 
@@ -194,68 +194,72 @@ df <- df %>%
 
 # Visual inspections ----
 df %>% 
-  ggplot(aes(x = datetime, y = conc_n2o, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = conc_n2o, color = sensor)) + geom_line() + geom_point()
 
 df %>% 
-  ggplot(aes(x = datetime, y = conc_n2o_corr, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = conc_n2o_corr, color = sensor)) + geom_line() + geom_point()
 
 df %>% 
-  ggplot(aes(x = datetime, y = conc_co2, color = factor(sensor))) + geom_line() + geom_point()
-
+  filter(!is.na(conc_co2)) %>% 
+  ggplot(aes(x = datetime, y = conc_co2, color = sensor)) + geom_line() + geom_point()
 
 df %>% 
-  ggplot(aes(x = datetime, y = humidity, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = conc_co2_corr, color = sensor)) + geom_line() + geom_point()
+
+df %>% 
+  ggplot(aes(x = datetime, y = humidity, color = sensor)) + geom_line() + geom_point()
 
 df %>%
   filter(irSignal1 != 0) %>% 
-  ggplot(aes(x = datetime, y = irSignal1, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = irSignal1, color = sensor)) + geom_line() + geom_point()
 
 df %>% 
   filter(irSignal2 != 0) %>% 
-  ggplot(aes(x = datetime, y = irSignal2, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = irSignal2, color = sensor)) + geom_line() + geom_point()
 
 df %>% 
   filter(irSignal3 != 0) %>% 
-  ggplot(aes(x = datetime, y = irSignal3, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = irSignal3, color = sensor)) + geom_line() + geom_point()
 
 df %>% 
   filter(irSignal4 != 0) %>% 
-  ggplot(aes(x = datetime, y = irSignal4, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = irSignal4, color = sensor)) + geom_line() + geom_point()
 
 df %>%
-  filter(irtemperature < 100) %>% 
-  ggplot(aes(x = datetime, y = irtemperature, color = factor(sensor))) + geom_line() + geom_point()
+  filter(irtemperature < 50) %>% 
+  ggplot(aes(x = datetime, y = irtemperature, color = sensor)) + geom_line() + geom_point()
 
 df %>%
   # filter(irtemperature < 100) %>% 
-  ggplot(aes(x = datetime, y = soilTemperature, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = soilTemperature, color = sensor)) + geom_line() + geom_point()
 
 df %>%
-  ggplot(aes(x = datetime, y = pressure, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = pressure, color = sensor)) + geom_line() + geom_point()
 
 df %>%
-  ggplot(aes(x = datetime, y = rssi, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = rssi, color = sensor)) + geom_line() + geom_point()
 
 df %>%
-  ggplot(aes(x = datetime, y = snr, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = snr, color = sensor)) + geom_line() + geom_point()
 
 df %>%
-  ggplot(aes(x = datetime, y = soilConductivity, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = soilConductivity, color = sensor)) + geom_line() + geom_point()
 
 df %>%
-  ggplot(aes(x = datetime, y = soilDielectric, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = soilDielectric, color = sensor)) + geom_line() + geom_point()
 
 df %>%
-  ggplot(aes(x = datetime, y = soilDissolved, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = soilDissolved, color = sensor)) + geom_line() + geom_point()
 
 df %>%
-  ggplot(aes(x = datetime, y = soilMoisture, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = soilMoisture, color = sensor)) + geom_line() + geom_point()
 
 df %>%
-  ggplot(aes(x = datetime, y = soilSalinity, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = soilSalinity, color = sensor)) + geom_line() + geom_point()
 
 df %>%
-  ggplot(aes(x = datetime, y = soilTemperature, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = soilTemperature, color = sensor)) + geom_line() + geom_point()
 
 df %>%
-  ggplot(aes(x = datetime, y = temperature, color = factor(sensor))) + geom_line() + geom_point()
+  ggplot(aes(x = datetime, y = temperature, color = sensor)) + geom_line() + geom_point()
+
