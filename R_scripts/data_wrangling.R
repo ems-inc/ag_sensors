@@ -6,7 +6,7 @@ library(lubridate)
 # Read in the data ----
 data_input <- "C:/Users/smame/OneDrive/Desktop/EMS_Git/ag_sensors/R_scripts"
 setwd(data_input)
-df <- read.csv("../data/Kernen_20221123_20221209.csv")
+df <- read.csv("../data/Kernen_20221123_20230102.csv")
 
 # Only keep data post-installation ----
 df <- df %>% 
@@ -29,6 +29,11 @@ df <- df %>%
   mutate(latitude  = replace(latitude,  sensor == 2, df_geo[2, 2])) %>%
   mutate(longitude = replace(longitude, sensor == 5, df_geo[3, 3])) %>%
   mutate(latitude  = replace(latitude,  sensor == 5, df_geo[3, 2]))
+
+
+df_geo %>% 
+  ggplot(aes(x = longitude, y = latitude, label = sensor)) + geom_point() + geom_text(vjust = -1, hjust = 1) 
+
 
 # Calibration and interference coefficients ----
 calib_coefs <- list(
@@ -66,6 +71,38 @@ calib_coefs <- list(
     co2_n = 0.397820688,
     co2_k = 0.087704798
   ),
+  N03 = data.frame(
+    n2o_alpha = ,
+    n2o_beta = ,
+    n2o_zero = ,
+    n2o_span = ,
+    n2o_a = ,
+    n2o_n = ,
+    n2o_k = ,
+    co2_alpha = ,
+    co2_beta = ,
+    co2_zero = ,
+    co2_span = ,
+    co2_a = ,
+    co2_n = ,
+    co2_k = 
+  ),
+  N04 = data.frame(
+    n2o_alpha = ,
+    n2o_beta = ,
+    n2o_zero = ,
+    n2o_span = ,
+    n2o_a = ,
+    n2o_n = ,
+    n2o_k = ,
+    co2_alpha = ,
+    co2_beta = ,
+    co2_zero = ,
+    co2_span = ,
+    co2_a = ,
+    co2_n = ,
+    co2_k = 
+  ),
   # N05 failed calibration
   N05 = data.frame(
     n2o_alpha = NA,
@@ -80,7 +117,23 @@ calib_coefs <- list(
     co2_span = NA,
     co2_a = NA,
     co2_n = NA
-  )
+  ),
+  N06 = data.frame(
+    n2o_alpha = ,
+    n2o_beta = ,
+    n2o_zero = ,
+    n2o_span = ,
+    n2o_a = ,
+    n2o_n = ,
+    n2o_k = ,
+    co2_alpha = ,
+    co2_beta = ,
+    co2_zero = ,
+    co2_span = ,
+    co2_a = ,
+    co2_n = ,
+    co2_k = 
+  ),
   
 )
 
@@ -200,7 +253,7 @@ df %>%
   ggplot(aes(x = datetime, y = conc_n2o_corr, color = sensor)) + geom_line() + geom_point()
 
 df %>% 
-  filter(!is.na(conc_co2)) %>% 
+  filter(!is.na(conc_co2)) %>%
   ggplot(aes(x = datetime, y = conc_co2, color = sensor)) + geom_line() + geom_point()
 
 df %>% 
