@@ -33,7 +33,6 @@ df <- df %>%
   mutate(longitude = replace(longitude, sensor == 5, df_geo[3, 3])) %>%
   mutate(latitude  = replace(latitude,  sensor == 5, df_geo[3, 2]))
 
-
 df_geo %>% 
   ggplot(aes(x = longitude, y = latitude, label = sensor)) + geom_point() + geom_text(vjust = -1, hjust = 1) 
 
@@ -245,40 +244,40 @@ df <- df %>%
   mutate(co2_n = replace(co2_n, sensor == 6, calib_coefs[[8]]$co2_n)) %>%
   mutate(co2_k  = replace(co2_k,  sensor == 6, calib_coefs[[8]]$co2_k))
 
-df_tmp <- 
-  data.frame(irSignal1 = 337063.7625,
-             irSignal3 = 201303,
-             irSignal4 = 443532.8063,
-             temperature = 24.52,
-             irtemperature = 24.52,
-             n2o_alpha = 0.0017,
-             n2o_beta = 0,
-             n2o_zero = 1.324765654,
-             n2o_span = 2.4855,
-             n2o_a = 0.002861783,
-             n2o_n = 0.459775519,
-             n2o_k = 0.919196428,
-             co2_alpha = 0,
-             co2_beta = 0,
-             co2_zero = 0.606751336,
-             co2_span = 0.607,
-             co2_a = 0.181502162,
-             co2_n = 0.570580948,
-             co2_k = 0.342671328)
-
-df_tmp %>% 
-  mutate(Cn2o = (-log(1-(1-(irSignal4/(irSignal1*n2o_zero)))/n2o_span)/n2o_a)^(1/n2o_n),
-         n2o_alpha_comp = (irSignal4/(irSignal1*n2o_zero))*(1 + n2o_alpha*(irtemperature - calib_coefs[[2]])),
-         n2o_beta_comp = n2o_span + (n2o_beta*((irtemperature - calib_coefs[[2]])/(calib_coefs[[2]] + calib_coefs[[1]]))),
-         Cco2 = (-log(1-(1-(irSignal3/(irSignal1*co2_zero)))/co2_span)/co2_a)^(1/co2_n),
-         co2_alpha_comp = (irSignal3/(irSignal1*co2_zero))*(1 + co2_alpha*(irtemperature - calib_coefs[[2]])),
-         co2_beta_comp = co2_span + (co2_beta*((irtemperature - calib_coefs[[2]])/(calib_coefs[[2]] + calib_coefs[[1]]))),
-         n2o_norm_absorb = log(1/n2o_alpha_comp),
-         co2_norm_absorb = log(1/co2_alpha_comp),
-         n2o_norm_absorb_int = (n2o_norm_absorb-co2_norm_absorb*co2_k)/(1-n2o_k*co2_k),
-         co2_norm_absorb_int = (co2_norm_absorb-n2o_norm_absorb*n2o_k)/(1-co2_k*n2o_k),
-         conc_n2o_corr = ifelse(n2o_norm_absorb_int <= 0, 0, ((-log(1-((1-exp(-n2o_norm_absorb_int))/n2o_beta_comp)))/n2o_a)^(1/n2o_n)),
-         conc_co2_corr = ifelse(co2_norm_absorb_int <= 0, 0, ((-log(1-((1-exp(-co2_norm_absorb_int))/co2_beta_comp)))/co2_a)^(1/co2_n)))
+# df_tmp <- 
+#   data.frame(irSignal1 = 337063.7625,
+#              irSignal3 = 201303,
+#              irSignal4 = 443532.8063,
+#              temperature = 24.52,
+#              irtemperature = 24.52,
+#              n2o_alpha = 0.0017,
+#              n2o_beta = 0,
+#              n2o_zero = 1.324765654,
+#              n2o_span = 2.4855,
+#              n2o_a = 0.002861783,
+#              n2o_n = 0.459775519,
+#              n2o_k = 0.919196428,
+#              co2_alpha = 0,
+#              co2_beta = 0,
+#              co2_zero = 0.606751336,
+#              co2_span = 0.607,
+#              co2_a = 0.181502162,
+#              co2_n = 0.570580948,
+#              co2_k = 0.342671328)
+# 
+# df_tmp %>% 
+#   mutate(Cn2o = (-log(1-(1-(irSignal4/(irSignal1*n2o_zero)))/n2o_span)/n2o_a)^(1/n2o_n),
+#          n2o_alpha_comp = (irSignal4/(irSignal1*n2o_zero))*(1 + n2o_alpha*(irtemperature - calib_coefs[[2]])),
+#          n2o_beta_comp = n2o_span + (n2o_beta*((irtemperature - calib_coefs[[2]])/(calib_coefs[[2]] + calib_coefs[[1]]))),
+#          Cco2 = (-log(1-(1-(irSignal3/(irSignal1*co2_zero)))/co2_span)/co2_a)^(1/co2_n),
+#          co2_alpha_comp = (irSignal3/(irSignal1*co2_zero))*(1 + co2_alpha*(irtemperature - calib_coefs[[2]])),
+#          co2_beta_comp = co2_span + (co2_beta*((irtemperature - calib_coefs[[2]])/(calib_coefs[[2]] + calib_coefs[[1]]))),
+#          n2o_norm_absorb = log(1/n2o_alpha_comp),
+#          co2_norm_absorb = log(1/co2_alpha_comp),
+#          n2o_norm_absorb_int = (n2o_norm_absorb-co2_norm_absorb*co2_k)/(1-n2o_k*co2_k),
+#          co2_norm_absorb_int = (co2_norm_absorb-n2o_norm_absorb*n2o_k)/(1-co2_k*n2o_k),
+#          conc_n2o_corr = ifelse(n2o_norm_absorb_int <= 0, 0, ((-log(1-((1-exp(-n2o_norm_absorb_int))/n2o_beta_comp)))/n2o_a)^(1/n2o_n)),
+#          conc_co2_corr = ifelse(co2_norm_absorb_int <= 0, 0, ((-log(1-((1-exp(-co2_norm_absorb_int))/co2_beta_comp)))/co2_a)^(1/co2_n)))
 
 df <- df %>% 
   mutate(sensor = factor(sensor),
@@ -297,10 +296,13 @@ df <- df %>%
 
 # Visual inspections ----
 df %>% 
-  ggplot(aes(x = datetime, y = conc_n2o, color = sensor)) + geom_line() + geom_point() + ylim(0,6000)
+  ggplot(aes(x = datetime, y = conc_n2o, color = sensor)) + geom_line() + geom_point() + ylim(0,6000) +
+  xlab("Date")
 
 df %>% 
-  ggplot(aes(x = datetime, y = conc_n2o_corr, color = sensor)) + geom_line() + geom_point() + ylim(0,9000)
+  # filter(sensor %in% c(5)) %>% 
+  ggplot(aes(x = datetime, y = conc_n2o_corr, color = sensor)) + geom_line() + geom_point() + ylim(0,9000) +
+  theme(legend.position = "none") + xlab("Date")
 
 df %>% 
   filter(!is.na(conc_co2)) %>%
