@@ -373,3 +373,9 @@ df %>%
   ggplot(aes(x = datetime, y = soilSalinity, color = sensor)) + geom_line() + geom_point()
 
 
+names(df)
+
+df %>% 
+  # mutate(soilMoisture = ifelse(soilMoisture == 0, NA, soilMoisture),
+  #        humidity = ifelse(humidity == 0, NA, humidity)) %>%
+  ggplot(aes(x = soilMoisture/10, y = humidity, color = sensor)) + geom_point()
