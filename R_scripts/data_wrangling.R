@@ -295,6 +295,8 @@ df <- df %>%
          conc_co2_corr = ifelse(co2_norm_absorb_int <= 0, 0, ((-log(1-((1-exp(-co2_norm_absorb_int))/co2_beta_comp)))/co2_a)^(1/co2_n)))
 
 # Visual inspections ----
+field_sensors <- c(1,2,5)
+
 df %>% 
   ggplot(aes(x = datetime, y = conc_n2o, color = sensor)) + geom_line() + geom_point() + ylim(0,6000) +
   xlab("Date")
@@ -312,6 +314,7 @@ df %>%
   ggplot(aes(x = datetime, y = conc_co2_corr, color = sensor)) + geom_line() + geom_point() + ylim(0,0.5)
 
 df %>% 
+  filter(sensor %in% field_sensors) %>% 
   ggplot(aes(x = datetime, y = humidity, color = sensor)) + geom_line() + geom_point()
 
 df %>%
@@ -331,15 +334,16 @@ df %>%
   ggplot(aes(x = datetime, y = irSignal4, color = sensor)) + geom_line() + geom_point() + ylim(0,500000)
 
 df %>%
-  filter(irtemperature < 50) %>% 
+  filter(irtemperature < 50, sensor %in% field_sensors) %>% 
   ggplot(aes(x = datetime, y = irtemperature, color = sensor)) + geom_line() + geom_point()
 
 df %>%
-  filter(soilTemperature < 10) %>%
+  filter(soilTemperature < 10, sensor %in% field_sensors) %>%
   ggplot(aes(x = datetime, y = soilTemperature, color = sensor)) + geom_line() + geom_point()
 
+# These just appear to be hard-coded ~room temps
 df %>%
-  filter(temperature != 0) %>%
+  filter(temperature != 0, sensor %in% field_sensors) %>%
   ggplot(aes(x = datetime, y = temperature, color = sensor)) + geom_line() + geom_point()
 
 df %>%
@@ -376,6 +380,38 @@ df %>%
 names(df)
 
 df %>% 
-  # mutate(soilMoisture = ifelse(soilMoisture == 0, NA, soilMoisture),
-  #        humidity = ifelse(humidity == 0, NA, humidity)) %>%
-  ggplot(aes(x = soilMoisture/10, y = humidity, color = sensor)) + geom_point()
+  filter(sensor %in% field_sensors) %>% 
+  ggplot(aes(x = datetime, y = soilMoisture/10, color = sensor)) + geom_point()
+
+df %>% 
+  filter(sensor == 1) %>% 
+  ggplot(aes(x = soilMoisture/10, y = theta_w, color = sensor)) + geom_point()
+
+
+
+# Soil water potentials from relative humidity ----
+# R: gas constant
+# MW_h2o: molecular weight of water
+# Pa: 1 Pa in cm h2o
+# humidity needs to be /100 because it's a % that needs to be converted to a proportion.
+MW_h2o <- 0.018015
+Pa <- 0.0101972
+IGC <- 8.3144598                # Ideal gas constant (m3 Pa / K mol)
+K <- 273.15                     # 0deg Kelvin
+df <- df %>%
+  mutate(humidity_psi = -(IGC * (irtemperature+K) / MW_h2o) * log(humidity/100) * Pa)
+
+# Step 4: Volumetric water content from water potential using van genuchten equations ----
+theta_r <- 0.01
+theta_s <- 0.538
+alpha <- 0.0168
+n <- 1.073
+m <- 0.068
+df <- df %>%
+  mutate(theta_w = theta_r + ( (theta_s - theta_r) / (1 + (alpha*humidity_psi)^n)^m ))
+
+df %>%
+  filter(sensor %in% field_sensors) %>%
+  ggplot(aes(x = datetime, y = theta_w, color = sensor)) + geom_line() + geom_point()
+
+
