@@ -314,24 +314,24 @@ df %>%
   ggplot(aes(x = datetime, y = conc_co2_corr, color = sensor)) + geom_line() + geom_point() + ylim(0,0.5)
 
 df %>% 
-  filter(sensor %in% field_sensors) %>% 
+  # filter(sensor %in% field_sensors) %>% 
   ggplot(aes(x = datetime, y = humidity, color = sensor)) + geom_line() + geom_point()
 
-df %>%
-  filter(irSignal1 != 0) %>% 
-  ggplot(aes(x = datetime, y = irSignal1, color = sensor)) + geom_line() + geom_point() + ylim(0,500000)
-
-df %>% 
-  filter(irSignal2 != 0) %>% 
-  ggplot(aes(x = datetime, y = irSignal2, color = sensor)) + geom_line() + geom_point() + ylim(0,500000)
-
-df %>% 
-  filter(irSignal3 != 0) %>% 
-  ggplot(aes(x = datetime, y = irSignal3, color = sensor)) + geom_line() + geom_point() + ylim(0,500000)
-
-df %>% 
-  filter(irSignal4 != 0) %>% 
-  ggplot(aes(x = datetime, y = irSignal4, color = sensor)) + geom_line() + geom_point() + ylim(0,500000)
+# df %>%
+#   filter(irSignal1 != 0) %>% 
+#   ggplot(aes(x = datetime, y = irSignal1, color = sensor)) + geom_line() + geom_point() + ylim(0,500000)
+# 
+# df %>% 
+#   filter(irSignal2 != 0) %>% 
+#   ggplot(aes(x = datetime, y = irSignal2, color = sensor)) + geom_line() + geom_point() + ylim(0,500000)
+# 
+# df %>% 
+#   filter(irSignal3 != 0) %>% 
+#   ggplot(aes(x = datetime, y = irSignal3, color = sensor)) + geom_line() + geom_point() + ylim(0,500000)
+# 
+# df %>% 
+#   filter(irSignal4 != 0) %>% 
+#   ggplot(aes(x = datetime, y = irSignal4, color = sensor)) + geom_line() + geom_point() + ylim(0,500000)
 
 df %>%
   filter(irtemperature < 50, sensor %in% field_sensors) %>% 
@@ -380,7 +380,7 @@ df %>%
 names(df)
 
 df %>% 
-  filter(sensor %in% field_sensors) %>% 
+  # filter(sensor %in% field_sensors) %>% 
   ggplot(aes(x = datetime, y = soilMoisture/10, color = sensor)) + geom_point()
 
 df %>% 
