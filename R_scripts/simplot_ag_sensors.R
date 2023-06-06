@@ -43,7 +43,7 @@ df <- df_in %>%
 date_val <- "2023-06-01 12:00"
 
 df %>% 
-  filter(datetime > date_val, temperature != 0) %>% 
+  filter(datetime > date_val, temperature != 0, soilTemperature != 0) %>% 
   ggplot(aes(x = datetime, y = temperature, color = sensor)) + geom_line() + geom_point() + 
   geom_line(aes(y = soilTemperature), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
@@ -71,8 +71,14 @@ df %>%
   xlab("Date")
 
 df %>% 
+  filter(datetime > date_val, soilSalinity != 0) %>%
+  ggplot(aes(x = datetime, y = soilSalinity, color = sensor)) + geom_line() + geom_point() + 
+  # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
+  xlab("Date")
+
+df %>% 
   filter(datetime > "2023-06-02 08:50:29 CDT", oxygen != 0) %>%
-  ggplot(aes(x = datetime, y = oxygen/1000, color = sensor)) + geom_line() + geom_point() + 
+  ggplot(aes(x = datetime, y = oxygen/1000, color = sensor)) + geom_line() + geom_point() +
   # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
