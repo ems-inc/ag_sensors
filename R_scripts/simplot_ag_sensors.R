@@ -1,9 +1,10 @@
 rm(list = ls())
 
-library(tidyverse)
-library(lubridate)
-library(mongolite)
-library(stringr)
+library(tidyverse)  # Tidy packages
+library(lubridate)  # Working with dates
+library(mongolite)  # Accessing MongoDB
+library(stringr)    # Working with strings
+library(sf)         # Read kml files
 
 # Read in the data ----
 # Read the data in directly from Mongo
@@ -19,49 +20,49 @@ df <- df_in %>%
   filter(str_detect(sensor, "Beta|Alpha"))
 
 # Add GPS coordinates ----
-# From Eric's GPS
-# df_geo <- data.frame(
-#   sensor = factor(c(1, 2, 5)),
-#   latitude = c(52.16690264, 52.16737549, 52.16421162),
-#   longitude = c(-106.54187016, -106.54193654, -106.53676891)
-# )
-# df <- df %>%
-#   mutate(latitude = NA,
-#          longitude = NA) %>%
-#   mutate(longitude = replace(longitude, sensor == 1, df_geo[1, 3])) %>%
-#   mutate(latitude  = replace(latitude,  sensor == 1, df_geo[1, 2])) %>%
-#   mutate(longitude = replace(longitude, sensor == 2, df_geo[2, 3])) %>%
-#   mutate(latitude  = replace(latitude,  sensor == 2, df_geo[2, 2])) %>%
-#   mutate(longitude = replace(longitude, sensor == 5, df_geo[3, 3])) %>%
-#   mutate(latitude  = replace(latitude,  sensor == 5, df_geo[3, 2]))
-# 
-# df_geo %>% 
-#   ggplot(aes(x = longitude, y = latitude, label = sensor)) + geom_point() + geom_text(vjust = -1, hjust = 1) 
+# Exported from Google Earth
+kml_df <- st_read("./data/Meota.kml")
+df_geo <- kml_df %>% 
+  mutate(long = st_coordinates(.)[,1],
+         lat = st_coordinates(.)[,2]) %>% 
+  st_drop_geometry() %>% 
+  select(-Description) %>% 
+  rename(sensor = Name,longitude = long,
+         latitude = lat) %>% 
+  relocate(longitude, .after = latitude) 
+
+df <- df %>% 
+  inner_join(df_geo, by = join_by(sensor))
+
+# projections
+lon_lat <- as.matrix(df[,c("longitude", "latitude")])
+east_north <- sf_project(pts = lon_lat, "+proj=utm +zone=12 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")
+df <- df %>%
+  mutate(easting = east_north[,1]) %>%
+  mutate(northing = east_north[,2])
+
+df %>% 
+  ggplot(aes(x = longitude, y = latitude, color = sensor, label = sensor)) + geom_point(alpha = 0) +
+  geom_text()
 
 # Visual inspections ----
 # field_sensors <- c(1,2,5)
-date_val <- "2023-06-01 12:00"
+date_val <- "2023-06-07 10:00"
 
 df %>% 
-  filter(datetime > date_val, temperature != 0, soilTemperature != 0) %>% 
+  filter(datetime > date_val, temperature != 0, soilTemperature != 0) %>%
   ggplot(aes(x = datetime, y = temperature, color = sensor)) + geom_line() + geom_point() + 
-  geom_line(aes(y = soilTemperature), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
+  geom_line(aes(y = soilTemperature), alpha = 0.6) + geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
-# df %>% 
-#   filter(datetime > "2023-05-28", irtemperature != 0) %>% 
-#   ggplot(aes(x = datetime, y = irtemperature, color = sensor)) + geom_line() + geom_point() + #ylim(0,6000) +
-#   xlab("Date")
+df %>%
+  filter(datetime > date_val) %>%
+  ggplot(aes(x = datetime, y = irtemperature, color = sensor)) + geom_line() + geom_point() + #ylim(0,6000) +
+  xlab("Date")
 
 df %>% 
-  filter(datetime > date_val, temperature != 0) %>% 
+  filter(datetime > date_val, soilTemperature != 0) %>% 
   ggplot(aes(x = datetime, y = soilTemperature, color = sensor)) + geom_line() + geom_point() + #ylim(0,6000) +
-  xlab("Date")
-
-df %>% 
-  filter(datetime > date_val, temperature != 0) %>%
-  ggplot(aes(x = datetime, y = soilMoisture, color = sensor)) + geom_line() + geom_point() + 
-  # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
 df %>% 
@@ -77,8 +78,20 @@ df %>%
   xlab("Date")
 
 df %>% 
-  filter(datetime > "2023-06-02 08:50:29 CDT", oxygen != 0) %>%
-  ggplot(aes(x = datetime, y = oxygen/1000, color = sensor)) + geom_line() + geom_point() +
+  filter(datetime > date_val) %>%
+  ggplot(aes(x = datetime, y = soilConductivity, color = sensor)) + geom_line() + geom_point() + 
+  # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
+  xlab("Date")
+
+df %>%
+  filter(datetime > date_val) %>%
+  ggplot(aes(x = datetime, y = soilDissolved, color = sensor)) + geom_line() + geom_point() +
+  # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
+  xlab("Date")
+
+df %>%
+  filter(datetime > date_val) %>%
+  ggplot(aes(x = datetime, y = rssi, color = sensor)) + geom_line() + geom_point() +
   # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
@@ -92,19 +105,31 @@ Pa <- 0.0101972
 IGC <- 8.3144598                # Ideal gas constant (m3 Pa / K mol)
 K <- 273.15                     # 0deg Kelvin
 df <- df %>%
-  mutate(humidity_psi = -(IGC * (irtemperature+K) / MW_h2o) * log(humidity/100) * Pa)
+  mutate(humidity_psi = -(IGC * (temperature+K) / MW_h2o) * log(humidity/100) * Pa)
 
 # Step 4: Volumetric water content from water potential using van genuchten equations ----
-theta_r <- 0.01
-theta_s <- 0.538
-alpha <- 0.0168
-n <- 1.073
-m <- 0.068
+# From USDA CalcPTFv3.0 manual ("Medium fine"; see table 2 on page 12)
+theta_r <- 0.010
+theta_s <- 0.439
+alpha <- 0.0314
+n <- 1.1804
+m <- 0.1528
 df <- df %>%
   mutate(theta_w = theta_r + ( (theta_s - theta_r) / (1 + (alpha*humidity_psi)^n)^m ))
 
 df %>%
-  filter(datetime > "2023-06-01", temperature != 0) %>% 
+  filter(datetime > "2023-06-08") %>% 
   ggplot(aes(x = datetime, y = theta_w, color = sensor)) + geom_line() + geom_point()
 
+df %>%
+  filter(datetime > "2023-06-08") %>% 
+  ggplot(aes(x = datetime, y = soilMoisture, color = sensor)) + geom_line() + geom_point() + 
+  geom_line(aes(y = theta_w*100))
+
+df %>%
+  filter(datetime > "2023-06-08") %>% 
+  ggplot(aes(x = theta_w*100, y = soilMoisture, color = sensor)) + geom_line() + geom_point()  +
+  # ylim(15,40) +
+  # xlim(25.5,28.5) + 
+  geom_abline(slope = 1, intercept = 0)
 

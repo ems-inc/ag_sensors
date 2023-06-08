@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>Meota.kml</name>
+	<Style id="style">
+		<IconStyle>
+			<scale>0.9</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href>
+			</Icon>
+		</IconStyle>
+	</Style>
+	<Style id="style0">
+		<IconStyle>
+			<scale>0.9</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href>
+			</Icon>
+		</IconStyle>
+	</Style>
+	<Style id="style1">
+		<IconStyle>
+			<scale>0.9</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href>
+			</Icon>
+		</IconStyle>
+	</Style>
+	<Style id="style2">
+		<IconStyle>
+			<scale>0.9</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href>
+			</Icon>
+		</IconStyle>
+	</Style>
+	<Style id="style3">
+		<IconStyle>
+			<scale>0.9</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href>
+			</Icon>
+		</IconStyle>
+	</Style>
+	<Style id="style4">
+		<IconStyle>
+			<scale>0.9</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href>
+			</Icon>
+		</IconStyle>
+	</Style>
+	<Style id="style5">
+		<IconStyle>
+			<scale>0.9</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href>
+			</Icon>
+		</IconStyle>
+	</Style>
+	<Style id="style6">
+		<IconStyle>
+			<scale>0.9</scale>
+			<Icon>
+				<href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href>
+			</Icon>
+		</IconStyle>
+	</Style>
+	<StyleMap id="stylemap_id0">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#style1</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#style4</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="stylemap_id1">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#style3</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#style6</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="stylemap_id2">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#style</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#style5</styleUrl>
+		</Pair>
+	</StyleMap>
+	<StyleMap id="stylemap_id3">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#style0</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#style2</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Folder>
+		<name>Sensors</name>
+		<open>1</open>
+		<Placemark>
+			<name>Alpha</name>
+			<Style>
+				<IconStyle>
+					<scale>0.9</scale>
+					<Icon>
+						<href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href>
+					</Icon>
+				</IconStyle>
+			</Style>
+			<Point>
+				<coordinates>-108.5624709818512,53.07502602227032,547.187683</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Beta</name>
+			<Style>
+				<IconStyle>
+					<scale>0.9</scale>
+					<Icon>
+						<href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href>
+					</Icon>
+				</IconStyle>
+			</Style>
+			<Point>
+				<coordinates>-108.5593819990754,53.0750169698149,543.180054</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Beta-2</name>
+			<styleUrl>#stylemap_id3</styleUrl>
+			<Point>
+				<coordinates>-108.5631545692685,53.08277284665593,545.7276000000001</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Beta-3</name>
+			<styleUrl>#stylemap_id2</styleUrl>
+			<Point>
+				<coordinates>-108.5561967001068,53.07511313537581,547.2907709999999</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Beta-4</name>
+			<styleUrl>#stylemap_id1</styleUrl>
+			<Point>
+				<coordinates>-108.5608352695392,53.08179917740956,546.939697</coordinates>
+			</Point>
+		</Placemark>
+		<Placemark>
+			<name>Beta-5</name>
+			<styleUrl>#stylemap_id0</styleUrl>
+			<Point>
+				<coordinates>-108.5592635334418,53.08107458505936,544.701416</coordinates>
+			</Point>
+		</Placemark>
+	</Folder>
+</Document>
+</kml>
