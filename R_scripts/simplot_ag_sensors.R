@@ -53,7 +53,7 @@ date_val <- "2023-06-07 10:00"
 df %>% 
   filter(datetime > date_val, temperature != 0, soilTemperature != 0) %>%
   ggplot(aes(x = datetime, y = temperature, color = sensor)) + geom_line() + geom_point() + 
-  # geom_line(aes(y = soilTemperature), alpha = 0.6) + geom_point(aes(y = soilTemperature), pch = 15) +
+  geom_line(aes(y = soilTemperature), alpha = 0.6) + geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
 df %>%
