@@ -43,7 +43,8 @@ df <- df %>%
 
 df %>% 
   ggplot(aes(x = longitude, y = latitude, color = sensor, label = sensor)) + geom_point(alpha = 0) +
-  geom_text()
+  geom_text() + 
+  geom_text(data = tibble(longitude = -108.55710, latitude = 53.073988, sensor = "gateway"), aes(x = longitude, y = latitude))
 
 # Visual inspections ----
 # field_sensors <- c(1,2,5)
@@ -56,7 +57,7 @@ df %>%
   xlab("Date")
 
 df %>%
-  filter(datetime > date_val) %>%
+  filter(datetime > date_val, irtemperature != 0) %>%
   ggplot(aes(x = datetime, y = irtemperature, color = sensor)) + geom_line() + geom_point() + #ylim(0,6000) +
   xlab("Date")
 
@@ -78,13 +79,13 @@ df %>%
   xlab("Date")
 
 df %>% 
-  filter(datetime > date_val) %>%
+  filter(datetime > date_val, soilConductivity != 0) %>%
   ggplot(aes(x = datetime, y = soilConductivity, color = sensor)) + geom_line() + geom_point() + 
   # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
 df %>%
-  filter(datetime > date_val) %>%
+  filter(datetime > date_val, soilDissolved != 0) %>%
   ggplot(aes(x = datetime, y = soilDissolved, color = sensor)) + geom_line() + geom_point() +
   # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
@@ -122,12 +123,12 @@ df %>%
   ggplot(aes(x = datetime, y = theta_w, color = sensor)) + geom_line() + geom_point()
 
 df %>%
-  filter(datetime > "2023-06-08") %>% 
+  filter(datetime > "2023-06-08", soilMoisture != 0) %>% 
   ggplot(aes(x = datetime, y = soilMoisture, color = sensor)) + geom_line() + geom_point() + 
   geom_line(aes(y = theta_w*100))
 
 df %>%
-  filter(datetime > "2023-06-08") %>% 
+  filter(datetime > "2023-06-08", soilMoisture != 0) %>% 
   ggplot(aes(x = theta_w*100, y = soilMoisture, color = sensor)) + geom_line() + geom_point()  +
   # ylim(15,40) +
   # xlim(25.5,28.5) + 
