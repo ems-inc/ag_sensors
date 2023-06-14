@@ -11,6 +11,7 @@ library(sf)         # Read kml files
 connection_string <- str_sub(read_file("C:/Users/smame/OneDrive - Environmental Material Science Inc/Data Analytics/Admin/mongo_db.txt"), 2, -2)
 sensor_data <- mongo(db="EMS-Database", collection = "Agriculture_Data", url=connection_string)
 df_in <- sensor_data$find()
+data_input <- "C:/Users/smame/OneDrive/Desktop/EMS_Git/ag_sensors/R_scripts"
 
 # At prior to installation, there was a bunch of programming, troubleshooting, etc.
 # these are the data to look at here
@@ -21,7 +22,8 @@ df <- df_in %>%
 
 # Add GPS coordinates ----
 # Exported from Google Earth
-kml_df <- st_read("./data/Meota.kml")
+setwd(data_input)
+kml_df <- st_read("../data/Meota.kml")
 df_geo <- kml_df %>% 
   mutate(long = st_coordinates(.)[,1],
          lat = st_coordinates(.)[,2]) %>% 
@@ -52,14 +54,14 @@ date_val <- "2023-06-07 10:00"
 
 df %>% 
   filter(datetime > date_val, temperature != 0, soilTemperature != 0) %>%
-  ggplot(aes(x = datetime, y = temperature, color = sensor)) + geom_line() + geom_point() + 
-  geom_line(aes(y = soilTemperature), alpha = 0.6) + geom_point(aes(y = soilTemperature), pch = 15) +
+  ggplot(aes(x = datetime, y = temperature, color = sensor)) + geom_line() + geom_point() +
+  # geom_line(aes(y = soilTemperature), alpha = 0.6) + geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
 df %>%
-  filter(datetime > date_val, irtemperature != 0) %>%
+  filter(datetime > date_val, irtemperature != 0, sensor == "Alpha") %>%
   ggplot(aes(x = datetime, y = irtemperature, color = sensor)) + geom_line() + geom_point() + #ylim(0,6000) +
-  xlab("Date")
+  xlab("Date") + ylim(15,30)
 
 df %>% 
   filter(datetime > date_val, soilTemperature != 0) %>% 
@@ -69,6 +71,18 @@ df %>%
 df %>% 
   filter(datetime > date_val, soilMoisture != 0) %>%
   ggplot(aes(x = datetime, y = soilMoisture, color = sensor)) + geom_line() + geom_point() + 
+  # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
+  xlab("Date")
+
+df %>% 
+  filter(datetime > date_val, humidity != 0) %>%
+  ggplot(aes(x = deviceTimeCounter, y = humidity, color = sensor)) + geom_line() + geom_point() + 
+  # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
+  xlab("Date")
+
+df %>% 
+  filter(datetime > date_val, pressure != 0) %>%
+  ggplot(aes(x = datetime, y = pressure, color = sensor)) + geom_line() + geom_point() + 
   # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
