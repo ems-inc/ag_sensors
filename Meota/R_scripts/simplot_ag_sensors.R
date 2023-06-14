@@ -69,6 +69,14 @@ df %>%
   xlab("Date")
 
 df %>% 
+  filter(datetime > date_val, irtemperature != 0, temperature != 0, soilTemperature != 0) %>% 
+  rowwise() %>% 
+  mutate(avg_temp = mean(c(temperature, soilTemperature))) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = datetime, y = avg_temp, color = sensor)) + geom_line() + geom_point() + #ylim(0,6000) +
+  xlab("Date")
+
+df %>% 
   filter(datetime > date_val, soilMoisture != 0) %>%
   ggplot(aes(x = datetime, y = soilMoisture, color = sensor)) + geom_line() + geom_point() + 
   # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
@@ -101,6 +109,12 @@ df %>%
 df %>%
   filter(datetime > date_val, soilDissolved != 0) %>%
   ggplot(aes(x = datetime, y = soilDissolved, color = sensor)) + geom_line() + geom_point() +
+  # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
+  xlab("Date")
+
+df %>%
+  filter(datetime > date_val, soilDielectric != 0) %>%
+  ggplot(aes(x = timestamp, y = soilDielectric, color = sensor)) + geom_line() + geom_point() +
   # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
@@ -144,7 +158,9 @@ df %>%
 df %>%
   filter(datetime > "2023-06-08", soilMoisture != 0) %>% 
   ggplot(aes(x = theta_w*100, y = soilMoisture, color = sensor)) + geom_line() + geom_point()  +
+  geom_vline(xintercept = )
   # ylim(15,40) +
   # xlim(25.5,28.5) + 
   geom_abline(slope = 1, intercept = 0)
+
 
