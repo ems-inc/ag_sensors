@@ -1,7 +1,7 @@
 library(raster)
 library(sp)
 
-f <- "C:/Users/smame/OneDrive/Desktop/EMS_Git/ag_sensors/data/EMS-Database_Site_elevation_data_Meota.csv"
+f <- "C:/Users/smame/OneDrive/Desktop/EMS_Git/ag_sensors/Meota/data/EMS-Database_Site_elevation_data_Meota.csv"
 pts <- read.csv(f)
 
 # create a SpatialPointsDataFrame

@@ -5,13 +5,20 @@ library(lubridate)  # Working with dates
 library(mongolite)  # Accessing MongoDB
 library(stringr)    # Working with strings
 library(sf)         # Read kml files
+library(viridis)    # Viridis color scales
+library(scales)     # label_date_short
+library(ggrepel)    # geom_text_repel
 
-# Read in the data ----
+# ______________________________________----
+# Data wrangling  ----
 # Read the data in directly from Mongo
 connection_string <- str_sub(read_file("C:/Users/smame/OneDrive - Environmental Material Science Inc/Data Analytics/Admin/mongo_db.txt"), 2, -2)
 sensor_data <- mongo(db="EMS-Database", collection = "Agriculture_Data", url=connection_string)
 df_in <- sensor_data$find()
-data_input <- "C:/Users/smame/OneDrive/Desktop/EMS_Git/ag_sensors/R_scripts"
+data_input <- "C:/Users/smame/OneDrive/Desktop/EMS_Git/ag_sensors/Meota/R_scripts"
+csv_path <- "../data/"
+time_zone <- "Canada/Saskatchewan"
+date_val <- "2023-06-07 10:00"
 
 # At prior to installation, there was a bunch of programming, troubleshooting, etc.
 # these are the data to look at here
@@ -41,16 +48,21 @@ lon_lat <- as.matrix(df[,c("longitude", "latitude")])
 east_north <- sf_project(pts = lon_lat, "+proj=utm +zone=12 +ellps=GRS80 +datum=NAD83 +units=m +no_defs")
 df <- df %>%
   mutate(easting = east_north[,1]) %>%
-  mutate(northing = east_north[,2])
+  mutate(northing = east_north[,2]) %>% 
+  filter(datetime > date_val)
 
 df %>% 
   ggplot(aes(x = longitude, y = latitude, color = sensor, label = sensor)) + geom_point(alpha = 0) +
   geom_text() + 
   geom_text(data = tibble(longitude = -108.55710, latitude = 53.073988, sensor = "gateway"), aes(x = longitude, y = latitude))
 
+# Now read in the Env Can data ----
+weather_df <- read.csv(dir(csv_path, full.name = T, pattern = glob2rx("North_Battleford_EnvCan_20230607*.csv")))
+weather_df <- weather_df %>% 
+  mutate(datetime = as_datetime(datetime, tz = time_zone)) # Note that ymd_hms() will remove 00:00:00 from each datetime
+
 # Visual inspections ----
 # field_sensors <- c(1,2,5)
-date_val <- "2023-06-07 10:00"
 
 df %>% 
   filter(datetime > date_val, temperature != 0, soilTemperature != 0) %>%
@@ -76,15 +88,12 @@ df %>%
   ggplot(aes(x = datetime, y = avg_temp, color = sensor)) + geom_line() + geom_point() + #ylim(0,6000) +
   xlab("Date")
 
-df %>% 
-  filter(datetime > date_val, soilMoisture != 0) %>%
-  ggplot(aes(x = datetime, y = soilMoisture, color = sensor)) + geom_line() + geom_point() + 
-  # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
-  xlab("Date")
+
+
 
 df %>% 
   filter(datetime > date_val, humidity != 0) %>%
-  ggplot(aes(x = deviceTimeCounter, y = humidity, color = sensor)) + geom_line() + geom_point() + 
+  ggplot(aes(x = datetime, y = humidity, color = sensor)) + geom_line() + geom_point() + 
   # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
@@ -124,6 +133,45 @@ df %>%
   # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
+
+
+coeff <- 3
+alpha <- 0.9
+force_p <- 0.5
+size_p <- 3
+
+df %>%
+  filter(soilMoisture != 0) %>%
+  group_by(sensor) %>%
+  mutate(mean = mean(soilMoisture, na.rm = T)) %>%
+  ungroup() %>%
+  arrange(mean) %>%
+  group_by(mean) %>%
+  mutate(group_id = as.factor(cur_group_id())) %>%
+  arrange(group_id, datetime) %>%
+  ggplot(aes(x = datetime, color = group_id, label = sensor)) +
+  geom_line(aes(y = soilMoisture), alpha = alpha, linewidth = 1) +
+  geom_line(
+    data = weather_df %>% mutate(sensor = "Env Can"),
+    aes(y = precip * coeff),
+    linewidth = 1.5, color = "blue"
+  ) +
+  geom_point(data = weather_df %>% mutate(sensor = "Env Can"), aes(y = precip *
+                                                                     coeff), color = "blue") +
+  scale_y_continuous(name = "VMC (%)",
+                     sec.axis = sec_axis(~ . / coeff, name = "Precipitation (mm)")) +
+  labs(color = "Series", x = "Date") +
+  theme_bw() +
+  theme(
+    axis.title.y.right = element_text(color = "blue")
+  ) +
+  guides(color = "none") +
+  labs(x = "Date",
+       y = bquote(Total ~ NSZD ~ (g ~ m ^ 2 ~ day)),
+       color = "Soil Sense") +
+  scale_color_viridis(discrete = T, direction = -1) +
+  scale_x_datetime(breaks = scales::breaks_pretty(12), labels = label_date_short())
+
 # Soil water potentials from relative humidity ----
 # R: gas constant
 # MW_h2o: molecular weight of water
@@ -158,7 +206,7 @@ df %>%
 df %>%
   filter(datetime > "2023-06-08", soilMoisture != 0) %>% 
   ggplot(aes(x = theta_w*100, y = soilMoisture, color = sensor)) + geom_line() + geom_point()  +
-  geom_vline(xintercept = )
+  # geom_vline(xintercept = )
   # ylim(15,40) +
   # xlim(25.5,28.5) + 
   geom_abline(slope = 1, intercept = 0)
