@@ -10,7 +10,7 @@ library(scales)     # label_date_short
 library(ggrepel)    # geom_text_repel
 
 # ______________________________________----
-# Data wrangling  ----
+# 😞 Data wrangling  ----
 # Read the data in directly from Mongo
 connection_string <- str_sub(read_file("C:/Users/smame/OneDrive - Environmental Material Science Inc/Data Analytics/Admin/mongo_db.txt"), 2, -2)
 sensor_data <- mongo(db="EMS-Database", collection = "Agriculture_Data", url=connection_string)
@@ -56,18 +56,19 @@ df %>%
   geom_text() + 
   geom_text(data = tibble(longitude = -108.55710, latitude = 53.073988, sensor = "gateway"), aes(x = longitude, y = latitude))
 
-# Now read in the Env Can data ----
+# ______________________________________----
+# 😑 Now read in the Env Can data ----
 weather_df <- read.csv(dir(csv_path, full.name = T, pattern = glob2rx("North_Battleford_EnvCan_20230607*.csv")))
 weather_df <- weather_df %>% 
   mutate(datetime = as_datetime(datetime, tz = time_zone)) # Note that ymd_hms() will remove 00:00:00 from each datetime
 
-# Visual inspections ----
+# ______________________________________----
+# 🙄 Visual inspections ----
 # field_sensors <- c(1,2,5)
 
 df %>% 
   filter(datetime > date_val, temperature != 0, soilTemperature != 0) %>%
   ggplot(aes(x = datetime, y = temperature, color = sensor)) + geom_line() + geom_point() +
-  # geom_line(aes(y = soilTemperature), alpha = 0.6) + geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
 df %>%
@@ -89,57 +90,51 @@ df %>%
   xlab("Date")
 
 
-
-
 df %>% 
   filter(datetime > date_val, humidity != 0) %>%
   ggplot(aes(x = datetime, y = humidity, color = sensor)) + geom_line() + geom_point() + 
-  # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
 df %>% 
   filter(datetime > date_val, pressure != 0) %>%
   ggplot(aes(x = datetime, y = pressure, color = sensor)) + geom_line() + geom_point() + 
-  # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
 df %>% 
   filter(datetime > date_val, soilSalinity != 0) %>%
   ggplot(aes(x = datetime, y = soilSalinity, color = sensor)) + geom_line() + geom_point() + 
-  # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
 df %>% 
   filter(datetime > date_val, soilConductivity != 0) %>%
   ggplot(aes(x = datetime, y = soilConductivity, color = sensor)) + geom_line() + geom_point() + 
-  # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
 df %>%
   filter(datetime > date_val, soilDissolved != 0) %>%
   ggplot(aes(x = datetime, y = soilDissolved, color = sensor)) + geom_line() + geom_point() +
-  # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
 df %>%
   filter(datetime > date_val, soilDielectric != 0) %>%
   ggplot(aes(x = timestamp, y = soilDielectric, color = sensor)) + geom_line() + geom_point() +
-  # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
 df %>%
   filter(datetime > date_val) %>%
   ggplot(aes(x = datetime, y = rssi, color = sensor)) + geom_line() + geom_point() +
-  # geom_line(aes(y = soilConductivity), alpha = 0.6) + #geom_point(aes(y = soilTemperature), pch = 15) +
   xlab("Date")
 
+# ______________________________________----
+# 🙂 Compare soil moisture to rain event June 14th, 2023 ----
 
-
+## Coefficients ----
 coeff <- 3
 alpha <- 0.9
 force_p <- 0.5
 size_p <- 3
 
+## Figure ----
 df %>%
   filter(soilMoisture != 0) %>%
   group_by(sensor) %>%
@@ -172,7 +167,10 @@ df %>%
   scale_color_viridis(discrete = T, direction = -1) +
   scale_x_datetime(breaks = scales::breaks_pretty(12), labels = label_date_short())
 
-# Soil water potentials from relative humidity ----
+# ______________________________________----
+# 😆 Volumetric water content from relative humidity ----
+
+## Soil water potentials from relative humidity ----
 # R: gas constant
 # MW_h2o: molecular weight of water
 # Pa: 1 Pa in cm h2o
@@ -184,8 +182,11 @@ K <- 273.15                     # 0deg Kelvin
 df <- df %>%
   mutate(humidity_psi = -(IGC * (temperature+K) / MW_h2o) * log(humidity/100) * Pa)
 
-# Step 4: Volumetric water content from water potential using van genuchten equations ----
+## VMC from water potentials ----
+# Uses van genuchten equations
 # From USDA CalcPTFv3.0 manual ("Medium fine"; see table 2 on page 12)
+
+### Coefficients ----
 theta_r <- 0.010
 theta_s <- 0.439
 alpha <- 0.0314
@@ -194,6 +195,7 @@ m <- 0.1528
 df <- df %>%
   mutate(theta_w = theta_r + ( (theta_s - theta_r) / (1 + (alpha*humidity_psi)^n)^m ))
 
+### Visual inspections ----
 df %>%
   filter(datetime > "2023-06-08") %>% 
   ggplot(aes(x = datetime, y = theta_w, color = sensor)) + geom_line() + geom_point()
