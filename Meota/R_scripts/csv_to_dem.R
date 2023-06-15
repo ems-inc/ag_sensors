@@ -14,5 +14,5 @@ rast <- raster(ext=extent(pts), resolution=23.95)
 rasOut <- rasterize(pts, rast, pts$z, fun = mean) # we use a mean function here to regularly grid the irregular input points
 
 #write it out as a geotiff
-output_file <- "C:/Users/smame/OneDrive/Desktop/EMS_Git/ag_sensors/data/Meota_DEM_24m.tif"
-writeRaster(rasOut, output_file, format = "GTiff")
+output_file <- "C:/Users/smame/OneDrive/Desktop/EMS_Git/ag_sensors/Meota/data/Meota_DEM_24m.tif"
+writeRaster(rasOut, output_file, format = "GTiff", overwrite=TRUE)

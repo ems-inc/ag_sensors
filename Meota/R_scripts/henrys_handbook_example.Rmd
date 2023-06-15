@@ -1,0 +1,124 @@
+---
+title: "Predicting crop yield using soil moisture"
+output: html_notebook
+---
+
+# Plant available water  
+
+Sandy loam (sl) soil example, following Henry's Handbook of Soil and Water (2003)
+
+*Field capacity (fc)*  
+The amount of soil moisture or water content held in the soil after excess water
+has drained away and the rate of downward movement has decreased. This usually
+takes place 2–3 days after rain or irrigation in pervious soils of uniform structure and texture.
+Note that:
+Pw = percent by weight (%/%)
+Pv = percent by volume (%/%)
+Note that Pv = Pw*bd
+
+*Wilting point (wp)*  
+the minimum amount of water in the soil that the plant requires not to wilt. If the
+soil water content decreases to this or any lower point a plant wilts and can no longer
+recover its turgidity when placed in a saturated atmosphere for 12 hours.
+
+*Bulk density (bd)*  
+calculated as the dry weight of soil divided by its volume. This volume includes the
+volume of soil particles and the volume of pores among soil particles. Bulk density
+is typically expressed in g/cm3.
+
+
+```{r}
+library(tidyverse)
+# Here are some typical BD values:
+tibble(
+  texture_class = c(
+    "sand",
+    "loamy sand",
+    "sandy loam",
+    "loam",
+    "sandy clay loam",
+    "silty clay loam",
+    "silty loam",
+    "clay loam",
+    "silty clay",
+    "sandy clay",
+    "clay"
+  ),
+  bd_g_cm3 = c(1.65, 1.6, 1.55, 1.5, 1.5, 1.5, 1.5, 1.45, 1.45, 1.4, 1.35)
+)
+```
+```{r}
+fc <- 0.15
+wp <- 0.10
+bd <- 1.50  # From Henry (2003)
+foot <- 12  # inches
+
+vmc_fc <- fc*bd   # Volumetric water content at field capacity
+vmc_wp <- wp*bd   # Volumetric water content at wilting point
+
+paste("Volumetric water content at field capacity is ", 100*vmc_fc, "%", sep = "")
+paste("Volumetric water content at field capacity is ", 100*vmc_wp, "%", sep = "")
+```
+```{r}
+# Use volumetric water content (VWC) at FC and WP to determine plant available water
+h2o_avail_vv <- vmc_fc - vmc_wp # 7.75% by volume
+
+paste("Plant available water is ", 100*h2o_avail_vv, "%", sep = "")
+```
+```{r}
+# Therefore, if we have a foot of soil at FC, the available water will be:
+h2o_avail_in <- h2o_avail*foot  # Not that Henry rounds through all his calcs. Result is 0.9 here (no rounding), 0.96 in the book.
+
+paste("Available water in 1 foot of soil based on above calculations is ", round(h2o_avail_in,2), " inches", sep = "")
+```
+```{r}
+# Some approximations of available water content of select soil textures:
+df_avail <- tibble(
+  soil_texture = c("coarse - sandy loams","medium - loam, clay loam","fine - clay"),
+  h2o_avail_at_fc_inches_per_ft = c(1.0,1.5,2.0)
+)
+df_avail
+```
+
+```{r}
+# Based on the above tibble, looking at a thicker section of soil, a sandy loam at FC to the 4' depth will have:
+soil_thickness_ft <- 4
+soil_type <- "loam"
+avail_h2o <- df_avail$h2o_avail_at_fc_inches_per_ft[2]
+
+avail_h2o_4ft <- soil_thickness_ft*avail_h2o
+
+paste("Available water in 4 feet of loam soil is ", avail_h2o_4ft, " inches", sep = "")
+```
+The 6" of available water in the soil will contribute to crop yield in exactly the same way as 6" of rain. Water in the ground is like money in the bank: it sits there comfortably until needed by a crop. Surface soil may be lost to evaporation, but water below about 6" deep will stay there until a plant root extracts it.
+
+# Crop yield and water use
+
+Available water is a major determinant of crop grain yield. It's possible to reasonably predict upper yield for various soil water and rainfall scenarios.
+
+*Crop water use (wu)*  
+Is the (soil available water at seeding - soil available at harvest) + growing season rainfall = irrigation (if any). In most years, the crop uses all the water that is present in the soil, so the spring available soil water content plus probable rainfall is taken as the amount of water that will be available for crop growth. Relating this to wheat yield: 
+
+$$
+~wheat~ yield~ (bus/acre) = (wu - 2)*4
+$$
+
+This can be interpreted as: it takes 2" of water to give any wheat grain yield and for every additional inch, a yield of 4 bus/acre can be expected. 
+
+Water use efficiency (WUE) varies considerably from one soil zone to the next. AN inch of water at Red Deer, AB, is worth more in crop yield than an inch of water at Swift Current, SK, because not only is less water available in direr areas, but more water is needed due to higher temperatures. WUE also varies from year to year in the same soil zone. IN a wet year, temperature are usually lower and less water will be required for a given yield. In dry years, the temperature will be high, resulting less efficient use of the bit of water that is available. 
+
+```{r}
+# Effect of temperature on wheat yield
+wy_df <- tibble(
+  temperature_min_degC = c(10,16,21,27,32),
+  temperature_max_degC = c(15,21,27,32,37),
+  water_use_inches_per_day = seq(0.10,0.30,0.05)
+) %>% 
+  rowwise() %>% 
+  mutate(temperature_mean_degC = mean(c(temperature_min_degC, temperature_max_degC)))
+
+wy_df %>% 
+  ggplot(aes(x = temperature_mean_degC, y = water_use_inches_per_day)) + geom_line() + geom_point() +
+  labs(x = expression(Temperature~(degree*C)), y = "Water use (inches/day)")
+```
+
