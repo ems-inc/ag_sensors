@@ -1,6 +1,8 @@
 ---
 title: "Predicting crop yield using soil moisture"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 # Plant available water  
@@ -67,7 +69,7 @@ paste("Plant available water is ", 100*h2o_avail_vv, "%", sep = "")
 ```
 ```{r}
 # Therefore, if we have a foot of soil at FC, the available water will be:
-h2o_avail_in <- h2o_avail*foot  # Not that Henry rounds through all his calcs. Result is 0.9 here (no rounding), 0.96 in the book.
+h2o_avail_in <- h2o_avail_vv*foot  # Not that Henry rounds through all his calcs. Result is 0.9 here (no rounding), 0.96 in the book.
 
 paste("Available water in 1 foot of soil based on above calculations is ", round(h2o_avail_in,2), " inches", sep = "")
 ```
@@ -120,5 +122,80 @@ wy_df <- tibble(
 wy_df %>% 
   ggplot(aes(x = temperature_mean_degC, y = water_use_inches_per_day)) + geom_line() + geom_point() +
   labs(x = expression(Temperature~(degree*C)), y = "Water use (inches/day)")
+```
+# Equations relating crop yield to water use
+
+The general equation relating crop yield to water use is of the form:
+
+$$
+Crop~yield~(bus/acre) = (wu - a)b
+$$
+where:
+a = the minimum inches of water required to produce any seed
+b = the coefficient relating crop yield to water use
+water use (wu) = (growing season rain) + soil available water at seeding - soil available water at crop maturity) + (irrigation - if any)
+
+In dryland agriculture, the equation reduces to:
+water use (wu) = (growing season rain [gsr]) + (soil available water at seeding [sawas] - soil available water at crop maturity)
+
+In most situations, the crop uses all of the abilable soil water so the equation further simplifies to:
+wu = gsr + sawas
+
+
+```{r}
+# Tables 7.2 to 7.5 collated into a list
+yield_wu_list <- list(
+  min_wu =
+    data.frame(
+      soil_zone = rep(c("Brown","Dark Brown","Black","Thick Black, Grey Black, Grey"),each = 4),
+      coef_descr = rep(c("minimum","wheat","barley","canola"), 4),
+      coef = rep(c("a","b","b","b"), 4),
+      rain_prob_75 = c(2.5,3,5,2,2.25,3.5,5.5,2.25,1.8,3.75,6.25,2.75,1.5,4,6.75,3.25),
+      rain_prob_50 = c(2.5,3.5,5.25,2.25,2.25,4,6,2.5,1.8,4.25,6.75,3,1.5,4.5,7.25,3.5),
+      rain_prob_25 = c(2.5,4,5.75,2.5,2.25,4.5,6.5,2.75,1.8,4.75,7,3.25,1.5,5,7,3.75)),
+  cwrs_wheat_yield_wu = 
+    data.frame(
+      soil_zone = rep(c("Brown","Dark Brown","Black","Thick Black, Grey Black, Grey"),each = 4),
+      coef_desc = rep(c("rain_inches","soil_water_2","soil_water_4","soil_water_6"), 4),
+      prob_75 = c(3.8,10,16,22,4.7,16,23,30,5.5,21,29,36,6.3,27,35,43),
+      prob_50 = c(5.3,17,24,31,6.2,24,32,40,7,30,39,48,7.8,37,46,55),
+      prob_25 = c(6.8,25,33,41,7.7,34,43,52,8.5,41,51,60,9.3,49,59,69)),
+  feed_barley_yield_wu = 
+    data.frame(
+      soil_zone = rep(c("Brown","Dark Brown","Black","Thick Black, Grey Black, Grey"),each = 4),
+      coef_desc = rep(c("rain_inches","soil_water_2","soil_water_4","soil_water_6"), 4),
+      prob_75 = c(3.8,17,27,37,4.7,24,35,46,5.5,36,48,61,6.3,46,59,73),
+      prob_50 = c(5.3,25,36,46,6.2,36,48,60,7,49,62,76,7.8,60,75,89),
+      prob_25 = c(6.8,36,48,59,7.7,48,61,74,8.5,61,75,89,9.3,74,89,104)),
+  canola_yield_wu = 
+    data.frame(
+      soil_zone = rep(c("Brown","Dark Brown","Black","Thick Black, Grey Black, Grey"),each = 4),
+      coef_desc = rep(c("rain_inches","soil_water_2","soil_water_4","soil_water_6"), 4),
+      prob_75 = c(3.8,7,11,15,4.7,10,15,19,5.5,16,21,27,6.3,22,29,35),
+      prob_50 = c(5.3,11,15,20,6.2,15,20,25,7,22,28,34,7.8,29,36,43),
+      prob_25 = c(6.8,16,21,26,7.7,20,26,31,8.5,28,35,41,9.3,37,44,52))
+  )
+
+# Example 1: For wheat in the Dark Brown soil zone with average rain (50% probability) and 4 inches of available soil water:
+rain1 <- yield_wu_list$cwrs_wheat_yield_wu$prob_50[yield_wu_list$cwrs_wheat_yield_wu$soil_zone == "Dark Brown"][1]
+soil1 <- 4
+a <- yield_wu_list$min_wu$rain_prob_50[yield_wu_list$min_wu$soil_zone == "Dark Brown" & yield_wu_list$min_wu$coef == "a"]
+b <- yield_wu_list$min_wu$rain_prob_50[yield_wu_list$min_wu$soil_zone == "Dark Brown" & yield_wu_list$min_wu$coef_descr == "wheat"]
+
+wu1 <- rain1 + soil1            # refer to table 7.3
+wheat_yield1 <- (wu1 - a)*b    # refer to table 7.3
+
+paste("Wheat yield in the Dark Brown Soil zone is estimated to be ", wheat_yield1, " bus/acre", sep = "")
+
+# Example 2: Les Henry's Dundurn farm in 2000 - Dark Brown Soil zone
+rain2 <- 10
+soil2 <- 4
+a <- yield_wu_list$min_wu$rain_prob_25[yield_wu_list$min_wu$soil_zone == "Dark Brown" & yield_wu_list$min_wu$coef == "a"]
+b <- yield_wu_list$min_wu$rain_prob_25[yield_wu_list$min_wu$soil_zone == "Dark Brown" & yield_wu_list$min_wu$coef_descr == "wheat"]
+
+wu2 <- rain2 + soil2            # refer to table 7.3
+wheat_yield2 <- (wu2 - a)*b    # refer to table 7.3
+
+paste("Wheat yield in the Dark Brown Soil zone is estimated to be ", wheat_yield2, " bus/acre", sep = "")
 ```
 

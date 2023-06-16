@@ -58,7 +58,7 @@ df %>%
 
 # ______________________________________----
 # 😑 Now read in the Env Can data ----
-weather_df <- read.csv(dir(csv_path, full.name = T, pattern = glob2rx("North_Battleford_EnvCan_20230607*.csv")))
+weather_df <- read.csv(dir(csv_path, full.name = T, pattern = glob2rx("North_Battleford_EnvCan_20230607*hourly.csv")))
 weather_df <- weather_df %>% 
   mutate(datetime = as_datetime(datetime, tz = time_zone)) # Note that ymd_hms() will remove 00:00:00 from each datetime
 

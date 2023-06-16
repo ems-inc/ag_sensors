@@ -7,12 +7,14 @@ library(forecast)
 # For Meota we used the North Battleford Climate station
 time_zone <- "Canada/Saskatchewan"
 data_input <- "C:/Users/smame/OneDrive/Desktop/EMS_Git/ag_sensors/Meota/R_scripts"
+interval <- "hour"
+interval_text <- "hourly"
 setwd(data_input)
 
 # Get the correct station ID, make a df using that ID and the time period of interest, and download
 stations_meta() # Check when last updated
 # stations_dl() # re-download/update stations data if necessary
-station_id <- suppressMessages(as.numeric(stations_search("NORTH BATTLEFORD", dist = 50, interval = "hour")[4,3]))
+station_id <- suppressMessages(as.numeric(stations_search("NORTH BATTLEFORD", dist = 50, interval = interval)[4,3]))
 
 # Now read in the data and tidy it up. Need to choose time period to cover
 start_date <- ymd(paste("2023", "06", "07", sep = "-"))
@@ -40,7 +42,8 @@ max_date <- max(weather_df$datetime)
 max_year <- year(max_date)
 max_month <- sprintf("%02d", month(max_date))
 max_day <- sprintf("%02d", day(max_date))
-save_path <- sprintf("../data/North_Battleford_EnvCan_%s%s%s_%s%s%s.csv",
+save_path <- sprintf("../data/North_Battleford_EnvCan_%s%s%s_%s%s%s_%s.csv",
                      min_year, min_month, min_day,
-                     max_year, max_month, max_day)
+                     max_year, max_month, max_day,
+                     interval_text)
 write.csv(weather_df, save_path)
